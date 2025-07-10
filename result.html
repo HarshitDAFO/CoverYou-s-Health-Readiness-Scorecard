@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Results - CoverYou's Health Readiness Scorecard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #183242, #183242);
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="90" r="1.5" fill="rgba(255,255,255,0.1)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .logo-placeholder {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .results-container {
+            padding: 40px;
+        }
+
+        .score-section {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            border-left: 6px solid #e74c3c;
+        }
+
+        .score-title {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .score-value {
+            font-size: 4em;
+            font-weight: 800;
+            color: #e74c3c;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .score-interpretation {
+            font-size: 1.2em;
+            color: #34495e;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            border: 2px solid rgba(231, 76, 60, 0.1);
+        }
+
+        .answers-section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #e74c3c;
+            font-weight: 600;
+        }
+
+        .answer-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #e74c3c;
+            transition: transform 0.3s ease;
+        }
+
+        .answer-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .question-text {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+
+        .answer-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .answer-value {
+            font-weight: 700;
+            font-size: 1.1em;
+            padding: 5px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .answer-yes {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+        }
+
+        .answer-no {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .score-impact {
+            font-size: 1.1em;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .recommendations-section {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #f39c12;
+        }
+
+        .recommendations-title {
+            font-size: 1.6em;
+            color: #d35400;
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .age-group {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #f39c12;
+        }
+
+        .age-range {
+            font-weight: 700;
+            color: #d35400;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .recommendation-text {
+            color: #6c5ce7;
+            font-size: 1.05em;
+            line-height: 1.6;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .action-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .retake-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+            transition: width 1s ease;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .financial-health-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .health-icon {
+            font-size: 2em;
+        }
+
+        .health-poor { color: #e74c3c; }
+        .health-fair { color: #f39c12; }
+        .health-good { color: #27ae60; }
+        .health-excellent { color: #2ecc71; }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .results-container {
+                padding: 20px;
+            }
+            
+            .score-value {
+                font-size: 3em;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .action-btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+<div class="header">
+    <div class="logo">
+        <img src="/static/coveryou_logo.png" alt="CoverYou Logo" style="height: 60px; margin-bottom: 20px;">
+    </div>
+    <h1>Assessment Results</h1>
+</div>        
+        <div class="results-container">
+  <div class="score-section">
+    <div class="score-title">CoverYou's Health Readiness Scorecard</div>
+    <div class="score-value">{{ total_score }}%</div>
+    <div class="progress-bar">
+      <div class="progress-fill" style="width: {{ total_score }}%"></div>
+    </div>
+    <div class="financial-health-indicator">
+      {% if total_score >= 80 %}
+        <span class="health-icon health-excellent">✅</span>
+        <span class="score-interpretation"><strong>Excellent Coverage</strong> – You’re on a great path. Maintain this discipline.</span>
+      {% elif total_score >= 60 %}
+        <span class="health-icon health-good">👍</span>
+        <span class="score-interpretation"><strong>Good, But Review Needed</strong> – A few improvements can strengthen your future.</span>
+      {% elif total_score >= 40 %}
+        <span class="health-icon health-fair">⚠️</span>
+        <span class="score-interpretation"><strong>Risk Zone</strong> – Your financial foundation needs attention.</span>
+      {% else %}
+        <span class="health-icon health-poor">❗</span>
+        <span class="score-interpretation"><strong>Immediate Action Required</strong> – It’s time to take immediate steps to improve.</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="answers-section">
+    <h2 class="section-title">📋 Your Scorecard Breakdown</h2>
+
+    {% for r in responses %}
+    <div class="answer-card">
+      <div class="question-text">{{ loop.index }}. {{ r.question }}</div>
+      <div class="answer-row">
+        <span class="answer-value answer-{{ r.answer }}">{{ r.answer.upper() }}</span>
+        <span class="score-impact">
+          {% if r.score > 0 %}+{{ r.score }}%{% else %}-0%{% endif %}
+        </span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+            <div class="recommendations-section">
+                <h2 class="recommendations-title">💡 CoverYou's Health Insurance Recommendation for Doctors by Age Group</h2>
+                
+                <div class="age-group">
+                    <div class="age-range">30-35:</div>
+                    <div class="recommendation-text">₹10–15 Lacs Sum Insured (Individual Policy) — Opt for comprehensive plans with maternity & OPD cover if planning family.</div>
+                </div>
+
+                <div class="age-group">
+                    <div class="age-range">35-40:</div>
+                    <div class="recommendation-text">₹15–20 Lacs Family Floater — Cover spouse + kids; add top-up plan. Choose plans with cashless hospitalization & day-care procedures.</div>
+                </div>
+
+                <div class="age-group">
+                    <div class="age-range">40-45:</div>
+                    <div class="recommendation-text">₹25+ Lacs Cover (Floater + Super Top-up) — Include critical illness rider; check pre-existing disease coverage.</div>
+                </div>
+
+                <div class="age-group">
+                    <div class="age-range">45-50:</div>
+                    <div class="recommendation-text">₹30–50 Lacs Sum Insured — Look for plans with no room rent capping & restore benefits; add annual health check-ups.</div>
+                </div>
+
+                <div class="age-group">
+                    <div class="age-range">50-55:</div>
+                    <div class="recommendation-text">₹50 Lacs+ Comprehensive Cover — Priority on hospitalization, critical illness, OPD & wellness programs. Watch waiting periods.</div>
+                </div>
+
+                <div class="age-group">
+                    <div class="age-range">55-60:</div>
+                    <div class="recommendation-text">₹50 Lacs – ₹1 Cr Cover — Prefer lifelong renewability, no-claim bonus & fast claim settlement plans.</div>
+                </div>
+
+                <div class="age-group">
+                    <div class="age-range">60+:</div>
+                    <div class="recommendation-text">₹25–50 Lacs Senior Citizen Plans — Ensure minimum sub-limits, high claim ratio insurers, and pre/post-hospitalization cover.</div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-btn download-btn" id="downloadBtn">
+                    <span class="loading-spinner" id="loadingSpinner"></span>
+                    <span id="downloadText">📄 Download Report as PDF</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animate progress bar on load
+        window.addEventListener('load', function() {
+            const progressFill = document.querySelector('.progress-fill');
+            setTimeout(() => {
+                progressFill.style.width = '50%';
+            }, 500);
+        });
+
+        // PDF Download functionality using html2canvas and jsPDF
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            const btn = this;
+            const spinner = document.getElementById('loadingSpinner');
+            const text = document.getElementById('downloadText');
+            
+            // Show loading state
+            btn.disabled = true;
+            spinner.style.display = 'block';
+            text.textContent = 'Generating PDF...';
+            
+            // Use browser's print functionality for better formatting
+            setTimeout(() => {
+                // Create a new window with the same content but optimized for PDF
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Financial Assessment Report</title>
+                        <style>
+                            * {
+                                margin: 0;
+                                padding: 0;
+                                box-sizing: border-box;
+                            }
+                            body {
+                                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                padding: 20px;
+                                line-height: 1.6;
+                            }
+                            .container {
+                                max-width: 800px;
+                                margin: 0 auto;
+                                background: rgba(255, 255, 255, 0.95);
+                                border-radius: 20px;
+                                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                                backdrop-filter: blur(10px);
+                                overflow: hidden;
+                            }
+                            .header {
+                                background: linear-gradient(135deg, #e74c3c, #c0392b);
+                                color: white;
+                                padding: 40px;
+                                text-align: center;
+                                position: relative;
+                            }
+                            .logo-placeholder {
+                                width: 80px;
+                                height: 80px;
+                                background: rgba(255, 255, 255, 0.2);
+                                border-radius: 50%;
+                                margin: 0 auto 20px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 30px;
+                                border: 3px solid rgba(255, 255, 255, 0.3);
+                            }
+                            .header h1 {
+                                font-size: 2.5em;
+                                font-weight: 700;
+                                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+                            }
+                            .results-container {
+                                padding: 40px;
+                            }
+                            .score-section {
+                                text-align: center;
+                                margin-bottom: 40px;
+                                padding: 30px;
+                                background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                                border-radius: 15px;
+                                border-left: 6px solid #e74c3c;
+                            }
+                            .score-title {
+                                font-size: 1.8em;
+                                color: #2c3e50;
+                                margin-bottom: 15px;
+                                font-weight: 600;
+                            }
+                            .score-value {
+                                font-size: 4em;
+                                font-weight: 800;
+                                color: #e74c3c;
+                                margin: 20px 0;
+                                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+                            }
+                            .score-interpretation {
+                                font-size: 1.2em;
+                                color: #34495e;
+                                margin-top: 15px;
+                                padding: 15px;
+                                background: rgba(255, 255, 255, 0.8);
+                                border-radius: 10px;
+                                border: 2px solid rgba(231, 76, 60, 0.1);
+                            }
+                            .section-title {
+                                font-size: 1.8em;
+                                color: #2c3e50;
+                                margin-bottom: 25px;
+                                padding-bottom: 15px;
+                                border-bottom: 3px solid #e74c3c;
+                                font-weight: 600;
+                            }
+                            .answer-card {
+                                background: white;
+                                border-radius: 12px;
+                                padding: 20px;
+                                margin-bottom: 15px;
+                                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                                border-left: 4px solid #e74c3c;
+                            }
+                            .question-text {
+                                font-weight: 600;
+                                color: #2c3e50;
+                                margin-bottom: 8px;
+                                font-size: 1.05em;
+                            }
+                            .answer-row {
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                flex-wrap: wrap;
+                                gap: 10px;
+                            }
+                            .answer-value {
+                                font-weight: 700;
+                                font-size: 1.1em;
+                                padding: 5px 12px;
+                                border-radius: 20px;
+                                text-transform: uppercase;
+                            }
+                            .answer-yes {
+                                background: linear-gradient(135deg, #27ae60, #2ecc71);
+                                color: white;
+                            }
+                            .answer-no {
+                                background: linear-gradient(135deg, #e74c3c, #c0392b);
+                                color: white;
+                            }
+                            .score-impact {
+                                font-size: 1.1em;
+                                font-weight: 600;
+                                padding: 5px 12px;
+                                border-radius: 20px;
+                                background: linear-gradient(135deg, #f39c12, #e67e22);
+                                color: white;
+                            }
+                            .recommendations-section {
+                                background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+                                border-radius: 15px;
+                                padding: 30px;
+                                margin-bottom: 30px;
+                                border: 2px solid #f39c12;
+                            }
+                            .recommendations-title {
+                                font-size: 1.6em;
+                                color: #d35400;
+                                margin-bottom: 20px;
+                                font-weight: 600;
+                                text-align: center;
+                            }
+                            .age-group {
+                                background: rgba(255, 255, 255, 0.8);
+                                border-radius: 10px;
+                                padding: 15px;
+                                margin-bottom: 15px;
+                                border-left: 4px solid #f39c12;
+                            }
+                            .age-range {
+                                font-weight: 700;
+                                color: #d35400;
+                                font-size: 1.1em;
+                                margin-bottom: 8px;
+                            }
+                            .recommendation-text {
+                                color: #6c5ce7;
+                                font-size: 1.05em;
+                                line-height: 1.6;
+                            }
+                            .progress-bar {
+                                width: 100%;
+                                height: 20px;
+                                background: #ecf0f1;
+                                border-radius: 10px;
+                                overflow: hidden;
+                                margin: 20px 0;
+                                box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+                            }
+                            .progress-fill {
+                                height: 100%;
+                                background: linear-gradient(90deg, #e74c3c, #c0392b);
+                                width: 50%;
+                                border-radius: 10px;
+                            }
+                            .financial-health-indicator {
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                gap: 15px;
+                                margin: 20px 0;
+                            }
+                            .health-icon {
+                                font-size: 2em;
+                                color: #f39c12;
+                            }
+                            @media print {
+                                body { background: white !important; }
+                                .container { box-shadow: none !important; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="header">
+                                <div class="logo-placeholder">📊</div>
+                                <h1>Assessment Results</h1>
+                            </div>
+                            
+                            <div class="results-container">
+                                <div class="score-section">
+                                    <div class="score-title">Cover You's Doctor's Financial Assessment Score</div>
+                                    <div class="score-value">50%</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill"></div>
+                                    </div>
+                                    <div class="financial-health-indicator">
+                                        <span class="health-icon">⚠️</span>
+                                        <span class="score-interpretation">
+                                            <strong>Fair Financial Health</strong> - Your financial foundation needs attention. 
+                                            There are key areas for improvement to secure your family's future.
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="answers-section">
+                                    <h2 class="section-title">📋 Your Scorecard Breakdown</h2>
+                                    
+                                    <div class="answer-card">
+                                        <div class="question-text">1. As a Doctor, do you feel your present health plan is exclusive for you or is it a generic one?</div>
+                                        <div class="answer-row">
+                                            <span class="answer-value answer-yes">YES</span>
+                                            <span class="score-impact">+20%</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="answer-card">
+                                        <div class="question-text">2. Was there an incident where your cashless claim was rejected?</div>
+                                        <div class="answer-row">
+                                            <span class="answer-value answer-no">NO</span>
+                                            <span class="score-impact">-0%</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="answer-card">
+                                        <div class="question-text">3. Are you aware of the exclusions and limitations in your current health policy?</div>
+                                        <div class="answer-row">
+                                            <span class="answer-value answer-no">NO</span>
+                                            <span class="score-impact">+10%</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="answer-card">
+                                        <div class="question-text">4. Do you have a top-up or super top-up policy for extra medical expenses?</div>
+                                        <div class="answer-row">
+                                            <span class="answer-value answer-no">NO</span>
+                                            <span class="score-impact">-0%</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="answer-card">
+                                        <div class="question-text">5. Have you checked if your preferred hospitals offer cashless treatment under your plan?</div>
+                                        <div class="answer-row">
+                                            <span class="answer-value answer-no">NO</span>
+                                            <span class="score-impact">-0%</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="answer-card">
+                                        <div class="question-text">6. Is your sum insured updated considering rising medical inflation?</div>
+                                        <div class="answer-row">
+                                            <span class="answer-value answer-yes">YES</span>
+                                            <span class="score-impact">-0%</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="answer-card">
+                                        <div class="question-text">7. Do you have a dedicated health insurance advisor or support contact?</div>
+                                        <div class="answer-row">
+                                            <span class="answer-value answer-yes">YES</span>
+                                            <span class="score-impact">+10%</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="answer-card">
+                                        <div class="question-text">8. Do you have health insurance that covers your entire family?</div>
+                                        <div class="answer-row">
+                                            <span class="answer-value answer-yes">YES</span>
+                                            <span class="score-impact">+10%</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="answer-card">
+                                        <div class="question-text">9. Does your policy include coverage for critical illnesses and major surgeries?</div>
+                                        <div class="answer-row">
+                                            <span class="answer-value answer-no">NO</span>
+                                            <span class="score-impact">-0%</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="recommendations-section">
+                                    <h2 class="recommendations-title">💡 CoverYou's Health Insurance Recommendation for Doctors by Age Group</h2>
+                                    
+                                    <div class="age-group">
+                                        <div class="age-range">30-35:</div>
+                                        <div class="recommendation-text">₹10–15 Lacs Sum Insured (Individual Policy) — Opt for comprehensive plans with maternity & OPD cover if planning family.</div>
+                                    </div>
+
+                                    <div class="age-group">
+                                        <div class="age-range">35-40:</div>
+                                        <div class="recommendation-text">₹15–20 Lacs Family Floater — Cover spouse + kids; add top-up plan. Choose plans with cashless hospitalization & day-care procedures.</div>
+                                    </div>
+
+                                    <div class="age-group">
+                                        <div class="age-range">40-45:</div>
+                                        <div class="recommendation-text">₹25+ Lacs Cover (Floater + Super Top-up) — Include critical illness rider; check pre-existing disease coverage.</div>
+                                    </div>
+
+                                    <div class="age-group">
+                                        <div class="age-range">45-50:</div>
+                                        <div class="recommendation-text">₹30–50 Lacs Sum Insured — Look for plans with no room rent capping & restore benefits; add annual health check-ups.</div>
+                                    </div>
+
+                                    <div class="age-group">
+                                        <div class="age-range">50-55:</div>
+                                        <div class="recommendation-text">₹50 Lacs+ Comprehensive Cover — Priority on hospitalization, critical illness, OPD & wellness programs. Watch waiting periods.</div>
+                                    </div>
+
+                                    <div class="age-group">
+                                        <div class="age-range">55-60:</div>
+                                        <div class="recommendation-text">₹50 Lacs – ₹1 Cr Cover — Prefer lifelong renewability, no-claim bonus & fast claim settlement plans.</div>
+                                    </div>
+
+                                    <div class="age-group">
+                                        <div class="age-range">60+:</div>
+                                        <div class="recommendation-text">₹25–50 Lacs Senior Citizen Plans — Ensure minimum sub-limits, high claim ratio insurers, and pre/post-hospitalization cover.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                `);
+                
+                printWindow.document.close();
+                
+                // Wait for the content to load, then trigger print
+                printWindow.onload = function() {
+                    setTimeout(() => {
+                        printWindow.print();
+                        printWindow.close();
+                        
+                        // Reset button state
+                        btn.disabled = false;
+                        spinner.style.display = 'none';
+                        text.textContent = '📄 Download Report as PDF';
+                    }, 500);
+                };
+            }, 500);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
